@@ -9,4 +9,11 @@ tls s = whipe (s, [])
               no'head'char remain = [x | x <- remain, x /= head remain]
 
 sfq :: String -> (String, Int)
-sfq s = (" ", 0)
+sfq s = test'words (words [x | x <- s, not (x `elem` "!@#$%^&*()-_=+[]'`~.:;,<>|?{}/")]) ("", 0)
+        where test'words list result = if (null list)
+                                           then result
+                                       else if (snd result < count'word list)
+                                           then test'words (reduce'list list) (head list, count'word list)
+                                       else test'words (reduce'list list) result
+              reduce'list list = [x | x <- list, x /= head list]
+              count'word list = length [x | x <- list, x == head list]
