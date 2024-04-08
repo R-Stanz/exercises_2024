@@ -11,7 +11,13 @@ replace text from to = evaluate_replace text from to "" 0
 -- 2
 
 lsSplit :: [Int] -> ([Int], Int, [Int])
-lsSplit ls = ([], 0, [])
+lsSplit ls = (before ls, maximum ls, after ls)
+             where before ls = [ls !! i | i <- [0..(max_index ls)-1]]
+                   after ls = [ls !! i | i <- [(max_index ls) + 1 .. (length ls)-1]]
+                   max_index ls = find_index ls (maximum ls) 0
+                   find_index ls max index = if (ls !! index == max)
+                                                 then index
+                                             else find_index ls max (index+1)
 
 -- 3
 
