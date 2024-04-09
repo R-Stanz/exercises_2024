@@ -22,4 +22,12 @@ lsSplit ls = (before ls, maximum ls, after ls)
 -- 3
 
 selectionSort :: Ord a => [a] -> [a]
-selectionSort ls = []
+selectionSort ls = select ls []
+                   where select [] ord_ls = ord_ls
+                         select ls ord_ls = select ((before_min ls) ++ (after_min ls)) (ord_ls ++ [minimum ls])
+                         before_min ls = [ls !! i | i <- [0..(min_index ls)-1]]
+                         after_min ls = [ls !! i | i <- [(min_index ls) + 1 .. (length ls)-1]]
+                         min_index ls = find_index ls (minimum ls) 0
+                         find_index ls val index = if (ls !! index == val)
+                                                       then index
+                                                   else find_index ls val (index+1)
