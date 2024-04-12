@@ -94,15 +94,12 @@ for i in range(2):
             arm_thick   = body_start_line + t
             stick_line  = first_black_pixel_line + t
 
-            #if (i == 1):
-                #print(arm_thick,arm_length)
-                #print("ll", left_padding, l)
-                #print(im[arm_thick][arm_length], stick_im[stick_line][stick_col])
-                #print(stick_im[stick_line][stick_col])
             im[arm_thick][arm_len] = stick_im[stick_line][stick_col]
 
     left_padding += arm_length + body_width
 
+
+# Legs
 
 #translation (180,100)
 #M_translation = np.float32([[1,0,-10],[0,1,-10]])
