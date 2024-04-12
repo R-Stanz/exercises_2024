@@ -39,6 +39,7 @@ for h in range(first_black_pixel_line, last_black_pixel_line + 1):
     for w in range(head_width):
         im[h - first_black_pixel_line][left_padding + w] = head_im[h][w]
 
+
 # Stickman's Body
 
 stick_img = cv2.imread(stick_filename)
@@ -68,15 +69,40 @@ body_width = last_black_pixel_line - first_black_pixel_line
 left_padding = int((im_width - 1 - body_width) / 2) 
 
 for h in range(body_height + 1):
+    body_line   = body_start_line + h 
+    stick_col   = first_black_pixel_col + h
+
     for w in range(body_width + 1):
-
-        body_line   = body_start_line + h 
-        stick_col   = first_black_pixel_col + h
-
         body_col    = left_padding + w
         stick_line  = first_black_pixel_line + w 
 
         im[body_line][body_col] = stick_im[stick_line][stick_col]
+
+
+# Arms
+
+arm_length = int((last_black_pixel_col - first_black_pixel_col) * 0.75)
+arm_thickness = last_black_pixel_line - first_black_pixel_line
+left_padding = int((im_width - 1 - 2 * arm_length - body_width) / 2) + 1
+
+for i in range(2): 
+    for l in range(arm_length + 1):
+        arm_len  = left_padding + l 
+        stick_col   = first_black_pixel_col + l
+
+        for t in range(arm_thickness + 1):
+            arm_thick   = body_start_line + t
+            stick_line  = first_black_pixel_line + t
+
+            #if (i == 1):
+                #print(arm_thick,arm_length)
+                #print("ll", left_padding, l)
+                #print(im[arm_thick][arm_length], stick_im[stick_line][stick_col])
+                #print(stick_im[stick_line][stick_col])
+            im[arm_thick][arm_len] = stick_im[stick_line][stick_col]
+
+    left_padding += arm_length + body_width
+
 
 #translation (180,100)
 #M_translation = np.float32([[1,0,-10],[0,1,-10]])
