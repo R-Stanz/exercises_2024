@@ -1,13 +1,9 @@
+import copy
 import sys
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-
-def find_first_black_pixel_index(image):
-    first_black_pixel_index = np.where(image == 0)
-    first_black_pixel_line = first_black_pixel_index[0][0]
-    first_black_pixel_col = first_black_pixel_index[1][0]
-    return (first_black_pixel_line, first_black_pixel_col)
+from stickmanHelpers import * 
 
 head_filename = sys.argv[1]
 stick_filename = sys.argv[2]
@@ -42,18 +38,18 @@ for h in range(first_black_pixel_line, last_black_pixel_line + 1):
 
 # Stickman's Body
 
-stick_img = cv2.imread(stick_filename)
+stick_img = cv2.imread(stick_filename, cv2.IMREAD_UNCHANGED)
 stick_im = cv2.cvtColor(stick_img, cv2.COLOR_RGB2GRAY)
 
-body_width = head_im.shape[1] 
-body_height = head_im.shape[0]
+stick_width = stick_im.shape[1] 
+stick_height = stick_im.shape[0]
 
 first_black_pixel_line, first_black_pixel_col = find_first_black_pixel_index(stick_im)
 
 last_black_pixel_line_reversed, last_black_pixel_col_reversed = find_first_black_pixel_index(np.fliplr(stick_im[::-1]))
 
-last_black_pixel_line = body_height - 1 - last_black_pixel_line_reversed
-last_black_pixel_col  = body_width  - 1 - last_black_pixel_col_reversed
+last_black_pixel_line = stick_height - 1 - last_black_pixel_line_reversed
+last_black_pixel_col  = stick_width  - 1 - last_black_pixel_col_reversed
 
 body_height = last_black_pixel_col - first_black_pixel_col
 stickman_height = head_height + body_height * (1 + 2 * 0.75 / np.sqrt(2))
@@ -101,56 +97,32 @@ for i in range(2):
 
 # Legs
 
-#translation (180,100)
-#M_translation = np.float32([[1,0,-10],[0,1,-10]])
-#head_im = cv2.warpAffine(head_im,M_translation,(width,height))
+scale = 0.75 * 2
 
-stick_img = cv2.imread(stick_filename)
-stick_im = cv2.cvtColor(stick_img, cv2.COLOR_RGB2GRAY)
-stick_im_dst = cv2.imread(stick_filename,0)
+left_leg_height = stick_height
+left_leg_width  = int(stick_width * scale)
 
-print(stick_im)
-print(stick_im.shape)
-
-'''
-width = im.shape[1]
-height = im.shape[0]
-
-#ler todos os pixels da imagem
-for c in range(0, width-1):
-	for l in range(0, height-1):
-		px = im.item(l,c)
-
-		#negativo
-		#im_dst.itemset(l,c,255-px)
-
-#		if px > 100:
-#			im.itemset(l,c,255)
+left_leg_dim = (left_leg_width, left_leg_height)
 
 
-#redimensiona a imagem
-new_width = int(im.shape[1] * .5)
-new_height = int(im.shape[0] * .5)
-dim = (new_width, new_height)
-im_resized = cv2.resize(im, dim, interpolation = cv2.INTER_AREA)
+left_leg_im = copy.deepcopy(stick_im)
+left_leg_im = cv2.resize(left_leg_im, left_leg_dim, interpolation = cv2.INTER_AREA)
 
+left_leg_im_center_line = int(left_leg_height / 1.3)
+left_leg_im_center_col  = int(left_leg_width / 3.5)
+left_leg_im_center = (left_leg_im_center_line, left_leg_im_center_col)
 
-#threshold
-ret,im_thresh = cv2.threshold(im,127,255,cv2.THRESH_BINARY)
+M_rotate = cv2.getRotationMatrix2D(left_leg_im_center, 45, 1.0)
 
-#mostra imagem com opencv
-cv2.imshow('threashold',im_thresh)
-cv2.imshow('resized',im_resized)
-'''
-cv2.imshow('image',im)
+left_leg_im = cv2.warpAffine(left_leg_im, M_rotate, left_leg_dim)
+
+right_leg_im = np.fliplr(left_leg_im)
+
+left_leg_im  = fill_the_blanks(left_leg_im)
+right_leg_im = np.fliplr(left_leg_im)
+
 cv2.imshow('circle',head_im)
 cv2.imshow('line',stick_im)
+cv2.imshow('image',im)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
-
-
-
-
-
-
