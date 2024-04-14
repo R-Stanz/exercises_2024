@@ -95,8 +95,7 @@ for i in range(2):
     left_padding += arm_length + body_width
 
 
-# Legs
-
+# Left Leg
 scale = 0.75 * 2
 
 left_leg_height = stick_height
@@ -114,15 +113,76 @@ left_leg_im_center = (left_leg_im_center_line, left_leg_im_center_col)
 
 M_rotate = cv2.getRotationMatrix2D(left_leg_im_center, 45, 1.0)
 
-left_leg_im = cv2.warpAffine(left_leg_im, M_rotate, left_leg_dim)
-
-right_leg_im = np.fliplr(left_leg_im)
-
+left_leg_im  = cv2.warpAffine(left_leg_im, M_rotate, left_leg_dim)
 left_leg_im  = fill_the_blanks(left_leg_im)
+
+
+
+first_black_pixel_line, first_black_pixel_col = find_first_black_pixel_index(left_leg_im)
+
+last_black_pixel_line_reversed, last_black_pixel_col_reversed = find_first_black_pixel_index(np.fliplr(left_leg_im[::-1]))
+
+last_black_pixel_line = stick_height - 1 - last_black_pixel_line_reversed
+last_black_pixel_col  = stick_width  - 1 - last_black_pixel_col_reversed
+
+
+top_padding = int(body_height + head_height- 2 + (im_height - 1 - stickman_height) / 2)
+left_padding = int(-1 + (im_width - 1 - body_width) / 2) 
+
+col_span = 0
+shift = 1
+line_span = last_black_pixel_line - first_black_pixel_line 
+for line in range(line_span + 1):
+
+    if (line == body_width):
+        col_span += 2
+    else:
+        col_span += 1
+
+    im_line = top_padding + line
+    left_leg_line = first_black_pixel_line + line
+    for col in range(col_span + 1):
+        im_col = left_padding - shift + col
+        left_leg_col = first_black_pixel_col - shift + col
+        im[im_line][im_col] = left_leg_im[left_leg_line][left_leg_col]
+
+    shift += 1
+
+# Right Leg
 right_leg_im = np.fliplr(left_leg_im)
 
-cv2.imshow('circle',head_im)
-cv2.imshow('line',stick_im)
+
+first_black_pixel_line, first_black_pixel_col = find_first_black_pixel_index(right_leg_im)
+
+last_black_pixel_line_reversed, last_black_pixel_col_reversed = find_first_black_pixel_index(np.fliplr(right_leg_im[::-1]))
+
+last_black_pixel_line = stick_height - 1 - last_black_pixel_line_reversed
+last_black_pixel_col  = stick_width  - 1 - last_black_pixel_col_reversed
+
+
+left_padding += body_width + 2
+
+shift = 0
+col_span = 1
+line_span = last_black_pixel_line - first_black_pixel_line
+for line in range(line_span + 1):
+
+    if ((line != 0) and (line < body_width)):
+        col_span += 2
+        shift -= 2
+    elif (line == body_width):
+        col_span += 1
+        shift -= 1
+
+    im_line = top_padding + line
+    right_leg_line = first_black_pixel_line + line
+    for col in range(col_span + 1):
+        im_col = left_padding + shift + col
+        right_leg_col = first_black_pixel_col + shift + col
+        im[im_line][im_col] = right_leg_im[right_leg_line][right_leg_col]
+
+    shift += 1
+
 cv2.imshow('image',im)
 cv2.waitKey(0)
 cv2.destroyAllWindows()

@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 def find_first_black_pixel_index(image):  
-    first_black_pixel_index = np.where(image == 0)
+    first_black_pixel_index = np.where(image < 50)
     first_black_pixel_line = first_black_pixel_index[0][0]
     first_black_pixel_col = first_black_pixel_index[1][0]
     return (first_black_pixel_line, first_black_pixel_col)
