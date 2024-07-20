@@ -55,12 +55,6 @@ int get_min_sub_str_len(string& str, unordered_map<char,int>& sub_str_chrs_count
 				min_len += 1;
 			}
 		}
-		
-		while (sub_str_chrs_count.find(str[min_len]) == sub_str_chrs_count.end()) {
-			sub_str_chrs_count[str[min_len]] += 1; 
-			min_len += 1;
-		}
-
 	}
 	return min_len;
 }
