@@ -1,5 +1,4 @@
 from node import Node
-from copy import deepcopy
 
 class Avl_tree:
     root = None
@@ -7,74 +6,78 @@ class Avl_tree:
         pass
 
     def add(self, value):
-        if not self.root:
-            self.root = Node(value)
-        else:
-            last_visited = self.avl_add(self.root, value, height=1)
+        print("Adding: " + str(value))
+        self.root = self.avl_add(self.root, value)
 
-    def avl_add(self, node, value, height):
+    def avl_add(self, node, value):
         if not node:
-            return Node(value, height)
+            return Node(value)
 
-        left = node.left
-        right = node.right
-        if (left and left.value == value) or (right and right.value == value):
-            print("A Binary-Search Tree (BST) can't have nodes with repeated values\n" +
+        if node.value > value:
+            node.left = self.avl_add(node.left, value)
+        elif node.value < value:
+            node.right = self.avl_add(node.right, value)
+        else:
+            print("A Binary-Search Tree (BST) can't have nodes with repeated values. " +
                     "Repeated value: " + str(value))
             return node
 
-        if node.value > value:
-            node.left = self.avl_add(left, value, height+1)
+        node.sub_tree_height = max(self.height(node.right), self.height(node.left)) + 1
 
-        if node.value < value:
-            node.right = self.avl_add(right, value, height+1)
-
-        return node#return self.balance(node, value)
+        return self.balance(node, value)
 
     def balance(self, node, value):
         balance_factor = self.get_balance_factor(node)
 
-        #left = self.rotate_left(node)
-        '''
         if balance_factor > 1:
             if node.right.value > value:
                 right = node.right
-                right = rotate_right(right)
-                return rotate_left(node)
-            else:
-                return rotate_left(node)
+                self.rotate_right(right)
+            return self.rotate_left(node)
 
         elif balance_factor < -1:
-            if node.left.value > value:
+            if node.left.value < value:
                 left = node.left
-                left = rotate_left(left)
-                return rotate_right(node)
-            else:
-                return rotate_right(node)
-        '''
+                self.rotate_left(left)
+            return self.rotate_right(node)
 
         return node
 
     def get_balance_factor(self, node):
-        balance_factor = 0
 
-        right = node.right
-        if right:
-            balance_factor += right.value
-
-        left = node.left
-        if left:
-            balance_factor -= left.value
+        balance_factor = (-1) * self.height(node.left)
+        balance_factor += self.height(node.right)
 
         return balance_factor
 
     def rotate_left(self, node):
-        biggest_son = deepcopy(node.right)
+        biggest_son = node.right
+        node.right = biggest_son.left
+        biggest_son.left = node
 
-        #node.right = biggest_son.left
-        #biggest_son.left = node
-        #update_heights(node)
-    
+        node.sub_tree_height = max(self.height(node.left), self.height(node.right)) + 1
+        biggest_son.sub_tree_height = max(self.height(biggest_son.left), self.height(biggest_son.right)) + 1
+        print(biggest_son)
+        print(biggest_son.left)
+        print(node)
+
+        return biggest_son
+
+    def rotate_right(self, node):
+        smallest_son = node.left
+        node.left = smallest_son.right
+        smallest_son.right = node
+
+        node.sub_tree_height  = max(self.height(node.left), self.height(node.right)) + 1
+        smallest_son.sub_tree_height = max(self.height(smallest_son.left), self.height(smallest_son.right)) + 1
+
+        return smallest_son
+
+    def height(self, node):
+        if node:
+            return node.sub_tree_height
+        return 0
+
     def in_order_ls(self, node, ls = []):
         if node.left:
             ls = self.in_order_ls(node.left, ls)
