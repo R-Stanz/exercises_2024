@@ -6,7 +6,6 @@ class Avl_tree:
         pass
 
     def add(self, value):
-        print("Adding: " + str(value))
         self.root = self.avl_add(self.root, value)
 
     def avl_add(self, node, value):
@@ -57,9 +56,6 @@ class Avl_tree:
 
         node.sub_tree_height = max(self.height(node.left), self.height(node.right)) + 1
         biggest_son.sub_tree_height = max(self.height(biggest_son.left), self.height(biggest_son.right)) + 1
-        print(biggest_son)
-        print(biggest_son.left)
-        print(node)
 
         return biggest_son
 
