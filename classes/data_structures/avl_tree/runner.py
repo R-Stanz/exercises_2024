@@ -6,5 +6,6 @@ tree.add(5)
 tree.add(10)
 tree.add(1)
 tree.add(3)
+tree.rm(10)
 
 print(tree)

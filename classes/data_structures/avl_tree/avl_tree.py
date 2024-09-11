@@ -23,9 +23,9 @@ class Avl_tree:
 
         node.sub_tree_height = max(self.height(node.right), self.height(node.left)) + 1
 
-        return self.balance(node, value)
+        return self.add_balance(node, value)
 
-    def balance(self, node, value):
+    def add_balance(self, node, value):
         balance_factor = self.get_balance_factor(node)
 
         if balance_factor > 1:
@@ -38,6 +38,58 @@ class Avl_tree:
             if node.left.value < value:
                 left = node.left
                 self.rotate_left(left)
+            return self.rotate_right(node)
+
+        return node
+
+    def rm(self, value):
+        self.root = self.avl_rm(self.root, value)
+
+    def avl_rm(self, node, value):
+        if not node:
+            return node
+
+        elif node.value > value:
+            node.left = self.avl_rm(node.left, value)
+        elif node.value < value:
+            node.right = self.avl_rm(node.right, value)
+        else:
+            if node.right:
+                node.right = self.rm_successor(node, node.right)
+            else:
+                return node.left
+
+        node.sub_tree_height = max(self.height(node.right), self.height(node.left)) + 1
+
+        return self.rm_balance(node)
+
+    def rm_successor(self, deleted_node, node):
+        if not node.left:
+            deleted_node.value = node.value
+            return node.right
+        
+        node.left = self.rm_successor(deleted_node, node.left)
+        node = self.rm_balance(node)
+
+        node.sub_tree_height = max(self.height(node.right), self.height(node.left)) + 1
+
+        return self.rm_balance(node)
+
+    def rm_balance(self, node):
+        balance_factor = self.get_balance_factor(node)
+
+        if balance_factor > 1:
+            biggest_son = node.right
+            biggest_son_balance_factor = self.get_balance_factor(biggest_son)
+            if biggest_son_balance_factor < 0:
+                self.rotate_right(biggest_son)
+            return self.rotate_left(node)
+
+        elif balance_factor < -1:
+            smallest_son = node.left
+            smallest_son_balance_factor = self.get_balance_factor(smallest_son)
+            if smallest_son_balance_factor > 0:
+                self.rotate_left(smallest_son)
             return self.rotate_right(node)
 
         return node
