@@ -21,7 +21,7 @@ class MaxHeap:
         self.move_up(self.size())
 
     def update_value(self, old_value, new_value):
-        index = self.heap.index(old_value)
+        index = self.index(old_value)
         if index > 0:
             self.heap[index] = new_value
             if new_value > old_value:

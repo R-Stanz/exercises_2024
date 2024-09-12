@@ -20,33 +20,14 @@ class MinHeap:
         self.heap.append(value)
         self.move_up(self.size())
 
-    def rm_by_index(self, index):
-        next_index = self.get_next_value(index)
-        if next_value > 0:
-            self.heap[index] = self.heap.pop(next_index)
-        else:
-            self.heap.pop(index)
-
-    def get_next_index(self, index):
-        index *= 2
-        if index < self.size():
-            if self.heap[index] >= self.heap[index+1]:
-                return index
-            return index+1
-
-        elif index == self.size():
-            return index
-
-        return 0
-
     def update_value(self, old_value, new_value):
-        pos = self.heap.index(old_value)
-        if pos > 0:
-            self.heap[pos] = new_value
+        index = self.index(old_value)
+        if index > 0:
+            self.heap[index] = new_value
             if new_value < old_value:
-                self.move_up(pos)
+                self.move_up(index)
             else:
-                self.move_down(pos)
+                self.move_down(index)
 
     def index(self, value):
         to_visit = Queue()
@@ -66,24 +47,37 @@ class MinHeap:
         print("Value ({}) Not Found On The Heap.".format(value))
         return 0
 
-    def move_up(self, pos):
-        previous_pos = pos // 2
-        while pos > 1 and self.heap[pos] < self.heap[previous_pos]:
-            self.swap(pos, previous_pos)
-            pos = previous_pos
-            previous_pos //= 2
+    def move_up(self, index):
+        previous_index = index // 2
+        while index > 1 and self.heap[index] < self.heap[previous_index]:
+            self.swap(index, previous_index)
+            index = previous_index
+            previous_index //= 2
 
-    def move_down(self, pos):
-        next_pos = pos * 2
-        while next_pos < self.size() and self.heap[pos] > self.heap[next_pos]:
-            self.swap(pos, next_pos)
-            pos = next_pos
-            next_pos *= 2
+    def move_down(self, index):
+        next_index = index * 2
+        while next_index < self.size() and self.heap[index] > self.heap[next_index]:
+            self.swap(index, next_index)
+            index = next_index
+            next_index *= 2
 
-    def swap(self, pos_a, pos_b):
-        self.heap[0] = self.heap[pos_a]
-        self.heap[pos_a] = self.heap[pos_b]
-        self.heap[pos_b] = self.heap[0]
+    def get_next_index(self, index):
+        index *= 2
+        if index < self.size():
+            if self.heap[index] >= self.heap[index+1]:
+                return index
+            return index+1
+
+        elif index == self.size():
+            return index
+
+        return 0
+
+
+    def swap(self, index_a, index_b):
+        self.heap[0] = self.heap[index_a]
+        self.heap[index_a] = self.heap[index_b]
+        self.heap[index_b] = self.heap[0]
 
     def __repr__(self):
         return str(self.heap[1:])

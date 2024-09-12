@@ -9,6 +9,6 @@ heap.add(10)
 heap.add(8)
 
 print(heap)
-print(heap.pop(3))
-#heap.update_value(10, 1)
+#print(heap.pop(3))
+heap.update_value(10, 1)
 print(heap)
