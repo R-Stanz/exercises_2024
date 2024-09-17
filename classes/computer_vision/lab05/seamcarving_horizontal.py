@@ -38,45 +38,57 @@ def find_seam(energy):
 
     return cum_energy, backtrack
 
-def remove_seam(image, cum_energy, backtrack, mask):
-    rows, cols, _ = image.shape
-    output = np.zeros((rows-1, cols, 3), dtype=image.dtype)
+def blank_a_row(blanks_by_cols, row, col, number_of_rows):
+    image_row = row
+
+    i = 0
+    while i < len(blanks_by_cols[col]) and image_row >= blanks_by_cols[col][i] and \
+        image_row < number_of_rows - 1:
+        
+            image_row += 1
+            i += 1
+
+    blanks_by_cols[col].insert(i, image_row)
+    return image_row, blanks_by_cols
+
+
+def remove_seam(images, cum_energy, backtrack):
+    new_image, annotated_image, blanks_by_cols = images
+
+    rows, cols = new_image.shape[:2]
+    output = np.zeros((rows-1, cols, 3), dtype=new_image.dtype)
+
     r = np.argmin(cum_energy, axis=0)[-1]
     for c in reversed(range(cols)):
+        image_r, blanks_by_cols = blank_a_row(blanks_by_cols, r, c, rows)
+
         for i in range(3):
-            output[:, c, i] = np.delete(image[:, c, i], [r])
+            output[:, c, i] = np.delete(new_image[:, c, i], [r])
+            annotated_image[image_r, c, i] = 0
         r = backtrack[r, c]
 
-        if c not in mask:
-            mask[c] = []
-        mask[c] += [r]
-
-    return mask, output
+    return (output, annotated_image, blanks_by_cols)
 
 def seam_carving(image, num_seams):
-    mask = {}
+    annotated_image = image.copy()
+
+    cols = image.shape[1]
+    blanks_by_cols = [[] for i in range(cols)]
+
+    images = (image, annotated_image, blanks_by_cols)
     for _ in range(num_seams):
-        energy = calculate_energy(image)
+        energy = calculate_energy(images[0])
         cum_energy, backtrack = find_seam(energy)
-        mask, image = remove_seam(image, cum_energy, backtrack, mask)
-    return mask, image
+        images = remove_seam(images, cum_energy, backtrack)
 
-def apply_mask(mask, image):
-    new_image = image.copy()
-    for col, del_rows in mask.items():
-        for row in del_rows:
-            for i in range(3):
-                new_image[row, col, i] = 0
+    return images[:2]
 
-    return new_image
 
 # Carregar a imagem
 img = io.imread('images/balls.jpg')
 
 # Aplicar o seam carving
-mask, new_image = seam_carving(img, 20)  # Reduz 20 costuras verticais
-
-new_img = apply_mask(mask, img)
+new_image, new_img = seam_carving(img, 130)  # Reduz 20 costuras verticais
 
 # cv2.imshow('original_image', img)
 # cv2.imshow('new_image', new_image)
