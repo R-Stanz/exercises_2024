@@ -6,22 +6,17 @@ from skimage import filters
 from skimage import color
 
 def calculate_energy(image):
-    # Convertendo a imagem para escala de cinza
     gray_image = color.rgb2gray(image)
-    # Calculando o gradiente da imagem
     energy = np.abs(filters.sobel_v(gray_image))
     return energy
 
 def find_seam(energy):
-    # A energia acumulada ao longo do caminho mínimo
     rows, cols = energy.shape
     cum_energy = energy.copy()
     backtrack = np.zeros_like(cum_energy, dtype=int)
 
-    # Preenchendo a matriz de energia acumulada
     for r in range(1, rows):
         for c in range(cols):
-            # Bordas são tratadas separadamente
             if c == 0:
                 idx = np.argmin(cum_energy[r-1, c:c+2])
                 backtrack[r, c] = idx + c
@@ -34,44 +29,57 @@ def find_seam(energy):
 
     return cum_energy, backtrack
 
-def remove_seam(image, cum_energy, backtrack, mask):
-    rows, cols, _ = image.shape
-    output = np.zeros((rows, cols - 1, 3), dtype=image.dtype)
+
+def blank_a_col(blanks_by_rows, row, col, number_of_cols):
+    image_col = col
+
+    i = 0
+    while i < len(blanks_by_rows[row]) and image_col >= blanks_by_rows[row][i] and \
+        image_col < number_of_cols - 1:
+        
+            image_col += 1
+            i += 1
+
+    blanks_by_rows[row].insert(i, image_col)
+    return image_col, blanks_by_rows
+
+def remove_seam(images, cum_energy, backtrack):
+    new_image, annotated_image, blanks_by_rows = images
+
+    rows, cols = new_image.shape[:2]
+    output = np.zeros((rows, cols - 1, 3), dtype=new_image.dtype)
+
     c = np.argmin(cum_energy[-1])
     for r in reversed(range(rows)):
+        image_c, blanks_by_rows = blank_a_col(blanks_by_rows, r, c, cols)
+
         for i in range(3):
-            output[r, :, i] = np.delete(image[r, :, i], [c])
+            output[r, :, i] = np.delete(new_image[r, :, i], [c])
+            annotated_image[r, image_c, i] = 0
         c = backtrack[r, c]
 
-        if r not in mask:
-            mask[r] = []
-        mask[r] += [c]
-
-    return mask, output
+    return (output, annotated_image, blanks_by_rows)
 
 def seam_carving(image, num_seams):
-    mask = {}
-    for _ in range(num_seams):
-        energy = calculate_energy(image)
-        cum_energy, backtrack = find_seam(energy)
-        mask, image = remove_seam(image, cum_energy, backtrack, mask)
-    return mask, image
+    annotated_image = image.copy()
 
-def apply_mask(mask, image):
-    new_image = image.copy()
-    for row, del_cols in mask.items():
-        for col in del_cols:
-            for i in range(3):
-                new_image[row, col,i] = 0
-    return new_image
+    rows = image.shape[0]
+    blanks_by_rows = [[] for i in range(rows)]
+
+    images = (image, annotated_image, blanks_by_rows)
+    for _ in range(num_seams):
+        energy = calculate_energy(images[0])
+        cum_energy, backtrack = find_seam(energy)
+        images = remove_seam(images, cum_energy, backtrack)
+
+    return images[:2]
+
 
 # Carregar a imagem
 img = io.imread('images/balls.jpg')
 
 # Aplicar o seam carving
-mask, new_image = seam_carving(img, 40)  # Reduz 20 costuras verticais
-
-new_img = apply_mask(mask, img)
+new_image, new_img  = seam_carving(img, 130)  # Reduz 20 costuras verticais
 
 # cv2.imshow('original_image', img)
 # cv2.imshow('new_image', new_image)
