@@ -3,8 +3,6 @@ from time import sleep
 import concurrent.futures
 
 def server_service():
-    if True:
-        return 1
     c, addr = s.accept()	 
     print ('Got connection from', addr )
 
@@ -15,7 +13,7 @@ def server_service():
 s = socket.socket()		 
 print ("Socket successfully created")
 
-port = 12345			
+port = 23456
 s.bind(('', port))		 
 print ("socket binded to %s" %(port)) 
 
@@ -26,5 +24,3 @@ connections_count = 0
 with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
     while True: 
         future = executor.submit(server_service)
-        connections_count += future.result()
-        print("Connections Count: ", connections_count)
